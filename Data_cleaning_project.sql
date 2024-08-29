@@ -1,3 +1,15 @@
+/*
+
+Cleaning Data in SQL Queries
+
+*/
+
+
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+
+-----------------------------------------------------------------------------------------------------
+	
 -- standardize Date Format
 
 SELECT
@@ -12,6 +24,8 @@ UPDATE
 SET
 	SaleDate = CONVERT(date, SaleDate);
 
+
+-- If the above doesn't Update properly, use this
 
 
 ALTER TABLE Port_folio_project.dbo.NashvilleHousing; 
@@ -54,7 +68,7 @@ JOIN
 ON
 	nvh1.ParcelID = nvh2.ParcelID
 AND
-	nvh1.UniqueID != nvh2.UniqueID
+	nvh1.UniqueID <> nvh2.UniqueID
 WHERE
 	nvh1.PropertyAddress IS NULL;
 
@@ -71,11 +85,13 @@ ON
 	nvh1.ParcelID = nvh2.ParcelID
 AND
 	nvh1.UniqueID != nvh2.UniqueID;
-
+WHERE
+	nvh1.PropertyAddress IS NULL
 
 -----------------------------------------------------------------------------------------------
 
 -- Breaking out Address into individual columns (Address, City, State)
+	
 
 SELECT
 	SUBSTRING(PropertyAddress, 1, CHARINDEX(',', PropertyAddress) -1) AS PropertysplitAddress,
@@ -108,6 +124,14 @@ SET
 	PropertysplitCity = SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddress) + 1, LEN(PropertyAddress));
 
 
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+
+
+
+Select OwnerAddress
+From PortfolioProject.dbo.NashvilleHousing
+	
 
 SELECT
 	PARSENAME(REPLACE(OwnerAddress, ',', '.'), 3) AS OwnersplitAddress,
@@ -151,7 +175,13 @@ SET
 	OwnersplitState = PARSENAME(REPLACE(OwnerAddress, ',', '.'), 1);
 
 
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+
+
+	
 ----------------------------------------------------------------------------------------------------
+	
 
 -- Change Y and N to Yes and No in "Sold as Vacant" fleld
 
@@ -184,45 +214,61 @@ UPDATE
 	Port_folio_project.dbo.NashvilleHousing
 SET
 	SoldAsVacant = CASE
-						WHEN
-							SoldAsVacant = 'N' THEN 'No'
-						WHEN
-							SoldAsVacant = 'Y' THEN 'Yes'
-						ELSE
-							SoldAsVacant
-					END;
+				WHEN
+					SoldAsVacant = 'N' THEN 'No'
+				WHEN
+					SoldAsVacant = 'Y' THEN 'Yes'
+				ELSE
+					SoldAsVacant
+			END;
 
 
 --------------------------------------------------------------------------------------------------------
 
+
 -- Remove Duplicates
+
 
 WITH Duplicates AS (
 SELECT *,
 ROW_NUMBER() OVER(PARTITION BY
-							 [ParcelID]
-							,[PropertyAddress]
-							,[SalePrice]
-							,[saledateconverted]
-							,[LegalReference]
+				 [ParcelID]
+				,[PropertyAddress]
+				,[SalePrice]
+				,[saledateconverted]
+				,[LegalReference]
 			ORDER BY
-							 [UniqueID ]) row_num
+				 [UniqueID ]) row_num
 FROM
 	Port_folio_project.dbo.NashvilleHousing
 	)
-DELETE
+SELECT *
 FROM
 	Duplicates
 WHERE
-	row_num > 1;
+	row_num > 1
+ORDER BY
+	PropertyAddress;
+
+
+Select *
+From PortfolioProject.dbo.NashvilleHousing
 
 
 ------------------------------------------------------------------------------------------------------
+	
 
 -- Delete unused column
+
+
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+	
 
 ALTER TABLE Port_folio_project.dbo.NashvilleHousing
 DROP COLUMN
 	TaxDistrict
-   ,PropertyAddress
+   ,PropertyAddress;
+
+	
    ,OwnerAddress;
